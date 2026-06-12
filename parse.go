@@ -25,62 +25,39 @@ func ParseCalendar(data []byte) (*Component, error) {
 // This supports streams that contain multiple calendars concatenated together.
 // Returns an error if no valid calendar is found.
 func ParseCalendars(data []byte) ([]*Component, error) {
-	lines, err := unfoldLines(data)
+	calendars, err := parseComponents(data)
 	if err != nil {
 		return nil, err
 	}
-	var all []*Component
-	var stack []*Component
-	for _, line := range lines {
-		prop, err := parseContentLine(line)
-		if err != nil {
-			return nil, err
-		}
-		switch prop.Name {
-		case TokenBegin:
-			component := NewComponent(prop.Value)
-			if len(stack) > 0 {
-				stack[len(stack)-1].AddComponent(component)
-			}
-			stack = append(stack, component)
-		case TokenEnd:
-			if len(stack) == 0 {
-				return nil, fmt.Errorf("ical: END:%s without BEGIN", prop.Value)
-			}
-			top := stack[len(stack)-1]
-			if top.Name != strings.ToUpper(prop.Value) {
-				return nil, fmt.Errorf("ical: END:%s closes %s", prop.Value, top.Name)
-			}
-			stack = stack[:len(stack)-1]
-			if len(stack) == 0 {
-				all = append(all, top)
-			}
-		default:
-			if len(stack) == 0 {
-				return nil, fmt.Errorf("ical: property %s outside component", prop.Name)
-			}
-			stack[len(stack)-1].AddProperty(prop)
-		}
-	}
-	if len(stack) != 0 {
-		return nil, fmt.Errorf("ical: unclosed component %s", stack[len(stack)-1].Name)
-	}
-	if len(all) == 0 {
+	if len(calendars) == 0 {
 		return nil, fmt.Errorf("ical: no calendar found")
 	}
-	return all, nil
+	return calendars, nil
 }
 
 // ParseComponent parses any single RFC 5545 component (VCALENDAR, VEVENT,
 // VTIMEZONE, etc.) from a byte stream. Use ParseCalendar when you specifically
 // expect a VCALENDAR object.
 func ParseComponent(data []byte) (*Component, error) {
+	roots, err := parseComponents(data)
+	if err != nil {
+		return nil, err
+	}
+	if len(roots) != 1 {
+		return nil, fmt.Errorf("ical: expected one root component, got %d", len(roots))
+	}
+	return roots[0], nil
+}
+
+// parseComponents parses all root components from unfolded lines.
+// It is the shared parsing core for ParseComponent and ParseCalendars.
+func parseComponents(data []byte) ([]*Component, error) {
 	lines, err := unfoldLines(data)
 	if err != nil {
 		return nil, err
 	}
-	var stack []*Component
 	var roots []*Component
+	var stack []*Component
 	for _, line := range lines {
 		prop, err := parseContentLine(line)
 		if err != nil {
@@ -115,10 +92,7 @@ func ParseComponent(data []byte) (*Component, error) {
 	if len(stack) != 0 {
 		return nil, fmt.Errorf("ical: unclosed component %s", stack[len(stack)-1].Name)
 	}
-	if len(roots) != 1 {
-		return nil, fmt.Errorf("ical: expected one root component, got %d", len(roots))
-	}
-	return roots[0], nil
+	return roots, nil
 }
 
 func unfoldLines(data []byte) ([]string, error) {
