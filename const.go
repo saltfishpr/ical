@@ -1,8 +1,6 @@
 package ical
 
 // Standard iCalendar component names defined by RFC 5545 Section 3.6.
-// Use these constants with NewComponent, ComponentsByName, and related functions
-// instead of string literals.
 const (
 	CompVCalendar = "VCALENDAR"
 	CompVEvent    = "VEVENT"
@@ -16,8 +14,6 @@ const (
 )
 
 // Standard iCalendar property names defined by RFC 5545.
-// Use these constants with the typed Add methods (AddText, AddDateTime, etc.)
-// and typed accessors (Text, DateTime, etc.) instead of string literals.
 const (
 	PropAction          = "ACTION"
 	PropAttach          = "ATTACH"
@@ -68,8 +64,6 @@ const (
 )
 
 // Common parameter names defined by RFC 5545 Section 3.2.
-// Use these constants with Params.Set, Params.Get, and Params.Values
-// for type-safe parameter manipulation.
 const (
 	ParamAltRep        = "ALTREP"
 	ParamCN            = "CN"
@@ -109,7 +103,6 @@ const (
 )
 
 // VALARM ACTION property values defined by RFC 5545 Section 3.6.6.
-// Used in alarm validation to determine which additional properties are required.
 const (
 	ActionAudio   = "AUDIO"
 	ActionDisplay = "DISPLAY"

@@ -2,16 +2,12 @@ package ical_test
 
 import (
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/saltfishpr/ical"
 )
-
-// utcTime is a helper to create a UTC time.Time from components for easier test readability.
-func utcTime(year, month, day, hour, min, sec int) time.Time {
-	return time.Date(year, time.Month(month), day, hour, min, sec, 0, time.UTC)
-}
 
 // collect expands the rule from start and returns all results as a slice.
 func collect(rule ical.RecurrenceRule, start time.Time) []time.Time {
@@ -43,12 +39,12 @@ func TestExpandDailyCount(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(1996, 4, 1, 1, 0, 0)
+	start := time.Date(1996, time.Month(4), 1, 1, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 10 {
 		t.Fatalf("got %d results, want 10", len(results))
 	}
-	want := utcTime(1996, 4, 10, 1, 0, 0)
+	want := time.Date(1996, time.Month(4), 10, 1, 0, 0, 0, time.UTC)
 	if !results[9].Equal(want) {
 		t.Fatalf("last result = %s, want %s", results[9], want)
 	}
@@ -59,12 +55,12 @@ func TestExpandDailyUntil(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(1996, 4, 1, 1, 0, 0)
+	start := time.Date(1996, time.Month(4), 1, 1, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 10 {
 		t.Fatalf("got %d results, want 10", len(results))
 	}
-	want := utcTime(1996, 4, 10, 1, 0, 0)
+	want := time.Date(1996, time.Month(4), 10, 1, 0, 0, 0, time.UTC)
 	if !results[9].Equal(want) {
 		t.Fatalf("last result = %s, want %s", results[9], want)
 	}
@@ -75,17 +71,17 @@ func TestExpandDailyInterval(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 1, 1, 10, 0, 0)
+	start := time.Date(2026, time.Month(1), 1, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 5 {
 		t.Fatalf("got %d results, want 5", len(results))
 	}
 	expected := []time.Time{
-		utcTime(2026, 1, 1, 10, 0, 0),
-		utcTime(2026, 1, 3, 10, 0, 0),
-		utcTime(2026, 1, 5, 10, 0, 0),
-		utcTime(2026, 1, 7, 10, 0, 0),
-		utcTime(2026, 1, 9, 10, 0, 0),
+		time.Date(2026, time.Month(1), 1, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(1), 3, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(1), 5, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(1), 7, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(1), 9, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -96,17 +92,17 @@ func TestExpandDailyWithByMonth(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 1, 30, 10, 0, 0)
+	start := time.Date(2026, time.Month(1), 30, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 5 {
 		t.Fatalf("got %d results, want 5", len(results))
 	}
 	expected := []time.Time{
-		utcTime(2026, 1, 30, 10, 0, 0),
-		utcTime(2026, 1, 31, 10, 0, 0),
-		utcTime(2026, 3, 1, 10, 0, 0),
-		utcTime(2026, 3, 2, 10, 0, 0),
-		utcTime(2026, 3, 3, 10, 0, 0),
+		time.Date(2026, time.Month(1), 30, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(1), 31, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(3), 1, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(3), 2, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(3), 3, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -117,17 +113,17 @@ func TestExpandDailyWithByMonthDay(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 1, 15, 10, 0, 0)
+	start := time.Date(2026, time.Month(1), 15, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 4 {
 		t.Fatalf("got %d results, want 4: %v", len(results), results)
 	}
 	// 2026-01 has 31 days, so -1 => 31
 	expected := []time.Time{
-		utcTime(2026, 1, 15, 10, 0, 0),
-		utcTime(2026, 1, 31, 10, 0, 0),
-		utcTime(2026, 2, 15, 10, 0, 0),
-		utcTime(2026, 2, 28, 10, 0, 0),
+		time.Date(2026, time.Month(1), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(1), 31, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(2), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(2), 28, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -141,7 +137,7 @@ func TestExpandWeeklyImplicitByDay(t *testing.T) {
 		t.Fatal(err)
 	}
 	// 2007-02-20 is a Tuesday
-	start := utcTime(2007, 2, 20, 17, 0, 0)
+	start := time.Date(2007, time.Month(2), 20, 17, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 4 {
 		t.Fatalf("got %d results, want 4", len(results))
@@ -158,18 +154,18 @@ func TestExpandWeeklyByDay(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 6, 1, 9, 0, 0) // Monday
+	start := time.Date(2026, time.Month(6), 1, 9, 0, 0, 0, time.UTC) // Monday
 	results := collect(rule, start)
 	if len(results) != 6 {
 		t.Fatalf("got %d results, want 6", len(results))
 	}
 	expected := []time.Time{
-		utcTime(2026, 6, 1, 9, 0, 0),  // Mon
-		utcTime(2026, 6, 3, 9, 0, 0),  // Wed
-		utcTime(2026, 6, 5, 9, 0, 0),  // Fri
-		utcTime(2026, 6, 8, 9, 0, 0),  // Mon
-		utcTime(2026, 6, 10, 9, 0, 0), // Wed
-		utcTime(2026, 6, 12, 9, 0, 0), // Fri
+		time.Date(2026, time.Month(6), 1, 9, 0, 0, 0, time.UTC),  // Mon
+		time.Date(2026, time.Month(6), 3, 9, 0, 0, 0, time.UTC),  // Wed
+		time.Date(2026, time.Month(6), 5, 9, 0, 0, 0, time.UTC),  // Fri
+		time.Date(2026, time.Month(6), 8, 9, 0, 0, 0, time.UTC),  // Mon
+		time.Date(2026, time.Month(6), 10, 9, 0, 0, 0, time.UTC), // Wed
+		time.Date(2026, time.Month(6), 12, 9, 0, 0, 0, time.UTC), // Fri
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -180,7 +176,7 @@ func TestExpandWeeklyByDaySkipsBeforeStart(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 6, 3, 9, 0, 0) // Wednesday
+	start := time.Date(2026, time.Month(6), 3, 9, 0, 0, 0, time.UTC) // Wednesday
 	results := collect(rule, start)
 	if len(results) != 5 {
 		t.Fatalf("got %d results, want 5: %v", len(results), results)
@@ -199,15 +195,15 @@ func TestExpandWeeklyInterval(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 6, 1, 10, 0, 0) // Monday
+	start := time.Date(2026, time.Month(6), 1, 10, 0, 0, 0, time.UTC) // Monday
 	results := collect(rule, start)
 	if len(results) != 3 {
 		t.Fatalf("got %d results, want 3", len(results))
 	}
 	expected := []time.Time{
-		utcTime(2026, 6, 1, 10, 0, 0),
-		utcTime(2026, 6, 15, 10, 0, 0),
-		utcTime(2026, 6, 29, 10, 0, 0),
+		time.Date(2026, time.Month(6), 1, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 29, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -219,14 +215,14 @@ func TestExpandWeeklyWeekStart(t *testing.T) {
 		t.Fatal(err)
 	}
 	// 2026-06-07 is a Sunday; with WKST=SU, Monday is the next day
-	start := utcTime(2026, 6, 7, 10, 0, 0) // Sunday
+	start := time.Date(2026, time.Month(6), 7, 10, 0, 0, 0, time.UTC) // Sunday
 	results := collect(rule, start)
 	if len(results) != 4 {
 		t.Fatalf("got %d results, want 4", len(results))
 	}
 	// When WKST=SU, week starts on Sunday. BYDAY=MO looks for Monday within the week.
 	// Since start is Sunday, the first Monday in that week is 2026-06-08.
-	if !results[0].Equal(utcTime(2026, 6, 8, 10, 0, 0)) {
+	if !results[0].Equal(time.Date(2026, time.Month(6), 8, 10, 0, 0, 0, time.UTC)) {
 		t.Fatalf("first result = %s, want 2026-06-08 (Monday in Sunday-start week)", results[0])
 	}
 }
@@ -237,7 +233,7 @@ func TestExpandWeeklyWithByMonth(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 1, 5, 10, 0, 0) // Monday in January
+	start := time.Date(2026, time.Month(1), 5, 10, 0, 0, 0, time.UTC) // Monday in January
 	results := collect(rule, start)
 	if len(results) != 3 {
 		t.Fatalf("got %d results, want 3: %v", len(results), results)
@@ -255,13 +251,13 @@ func TestExpandWeeklyUntil(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2007, 2, 20, 17, 0, 0)
+	start := time.Date(2007, time.Month(2), 20, 17, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	// 2007-02-20 to 2007-06-19 is 17 weeks of Tuesdays = 18 occurrences
 	if len(results) != 18 {
 		t.Fatalf("got %d results, want 18", len(results))
 	}
-	if results[len(results)-1].After(utcTime(2007, 6, 19, 22, 59, 59)) {
+	if results[len(results)-1].After(time.Date(2007, time.Month(6), 19, 22, 59, 59, 0, time.UTC)) {
 		t.Fatal("last result is after UNTIL")
 	}
 }
@@ -273,16 +269,16 @@ func TestExpandMonthlySimple(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 1, 15, 10, 0, 0)
+	start := time.Date(2026, time.Month(1), 15, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 4 {
 		t.Fatalf("got %d results, want 4", len(results))
 	}
 	expected := []time.Time{
-		utcTime(2026, 1, 15, 10, 0, 0),
-		utcTime(2026, 2, 15, 10, 0, 0),
-		utcTime(2026, 3, 15, 10, 0, 0),
-		utcTime(2026, 4, 15, 10, 0, 0),
+		time.Date(2026, time.Month(1), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(2), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(3), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(4), 15, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -292,15 +288,15 @@ func TestExpandMonthlyInterval(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 1, 15, 10, 0, 0)
+	start := time.Date(2026, time.Month(1), 15, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 3 {
 		t.Fatalf("got %d results, want 3", len(results))
 	}
 	expected := []time.Time{
-		utcTime(2026, 1, 15, 10, 0, 0),
-		utcTime(2026, 3, 15, 10, 0, 0),
-		utcTime(2026, 5, 15, 10, 0, 0),
+		time.Date(2026, time.Month(1), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(3), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(5), 15, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -311,16 +307,16 @@ func TestExpandMonthlyByMonthDay(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 1, 15, 10, 0, 0)
+	start := time.Date(2026, time.Month(1), 15, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 4 {
 		t.Fatalf("got %d results, want 4: %v", len(results), results)
 	}
 	expected := []time.Time{
-		utcTime(2026, 1, 15, 10, 0, 0),
-		utcTime(2026, 1, 31, 10, 0, 0),
-		utcTime(2026, 2, 15, 10, 0, 0),
-		utcTime(2026, 2, 28, 10, 0, 0),
+		time.Date(2026, time.Month(1), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(1), 31, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(2), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(2), 28, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -331,16 +327,16 @@ func TestExpandMonthlyByMonthDaySkipsInvalid(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 1, 31, 10, 0, 0)
+	start := time.Date(2026, time.Month(1), 31, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 3 {
 		t.Fatalf("got %d results, want 3: %v", len(results), results)
 	}
 	// Jan (31), Mar (31), May (31) — Feb and Apr are skipped
 	expected := []time.Time{
-		utcTime(2026, 1, 31, 10, 0, 0),
-		utcTime(2026, 3, 31, 10, 0, 0),
-		utcTime(2026, 5, 31, 10, 0, 0),
+		time.Date(2026, time.Month(1), 31, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(3), 31, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(5), 31, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -351,16 +347,16 @@ func TestExpandMonthlyByOrdinalDayPositive(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2003, 4, 10, 0, 0, 0)
+	start := time.Date(2003, time.Month(4), 10, 0, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 3 {
 		t.Fatalf("got %d results, want 3: %v", len(results), results)
 	}
 	// April 2003: 2nd Thu = 10, May 2003: 2nd Thu = 8, June 2003: 2nd Thu = 11
 	expected := []time.Time{
-		utcTime(2003, 4, 10, 0, 0, 0),
-		utcTime(2003, 5, 8, 0, 0, 0),
-		utcTime(2003, 6, 12, 0, 0, 0),
+		time.Date(2003, time.Month(4), 10, 0, 0, 0, 0, time.UTC),
+		time.Date(2003, time.Month(5), 8, 0, 0, 0, 0, time.UTC),
+		time.Date(2003, time.Month(6), 12, 0, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -371,7 +367,7 @@ func TestExpandMonthlyByOrdinalDayNegative(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2017, 5, 12, 0, 0, 0)
+	start := time.Date(2017, time.Month(5), 12, 0, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 3 {
 		t.Fatalf("got %d results, want 3: %v", len(results), results)
@@ -380,9 +376,9 @@ func TestExpandMonthlyByOrdinalDayNegative(t *testing.T) {
 	// June 2017: -3FR = 16 (30 days)
 	// July 2017: -3FR = 14 (31 days)
 	expected := []time.Time{
-		utcTime(2017, 5, 12, 0, 0, 0),
-		utcTime(2017, 6, 16, 0, 0, 0),
-		utcTime(2017, 7, 14, 0, 0, 0),
+		time.Date(2017, time.Month(5), 12, 0, 0, 0, 0, time.UTC),
+		time.Date(2017, time.Month(6), 16, 0, 0, 0, 0, time.UTC),
+		time.Date(2017, time.Month(7), 14, 0, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -393,7 +389,7 @@ func TestExpandMonthlyByOrdinalDayMultiple(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 6, 1, 10, 0, 0) // This is a Monday
+	start := time.Date(2026, time.Month(6), 1, 10, 0, 0, 0, time.UTC) // This is a Monday
 	results := collect(rule, start)
 	if len(results) != 6 {
 		t.Fatalf("got %d results, want 6: %v", len(results), results)
@@ -402,12 +398,12 @@ func TestExpandMonthlyByOrdinalDayMultiple(t *testing.T) {
 	// July 2026: 1MO=6, -1SU=26
 	// Aug 2026: 1MO=3, -1SU=30
 	expected := []time.Time{
-		utcTime(2026, 6, 1, 10, 0, 0),  // 1st Monday June
-		utcTime(2026, 6, 28, 10, 0, 0), // last Sunday June
-		utcTime(2026, 7, 6, 10, 0, 0),  // 1st Monday July
-		utcTime(2026, 7, 26, 10, 0, 0), // last Sunday July
-		utcTime(2026, 8, 3, 10, 0, 0),  // 1st Monday August
-		utcTime(2026, 8, 30, 10, 0, 0), // last Sunday August
+		time.Date(2026, time.Month(6), 1, 10, 0, 0, 0, time.UTC),  // 1st Monday June
+		time.Date(2026, time.Month(6), 28, 10, 0, 0, 0, time.UTC), // last Sunday June
+		time.Date(2026, time.Month(7), 6, 10, 0, 0, 0, time.UTC),  // 1st Monday July
+		time.Date(2026, time.Month(7), 26, 10, 0, 0, 0, time.UTC), // last Sunday July
+		time.Date(2026, time.Month(8), 3, 10, 0, 0, 0, time.UTC),  // 1st Monday August
+		time.Date(2026, time.Month(8), 30, 10, 0, 0, 0, time.UTC), // last Sunday August
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -419,15 +415,15 @@ func TestExpandMonthlyByOrdinalDaySkipsBeforeStart(t *testing.T) {
 		t.Fatal(err)
 	}
 	// June 2026: 1st Monday is June 1. We start on June 5, so the June 1st Monday is skipped.
-	start := utcTime(2026, 6, 5, 10, 0, 0)
+	start := time.Date(2026, time.Month(6), 5, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 3 {
 		t.Fatalf("got %d results, want 3: %v", len(results), results)
 	}
 	expected := []time.Time{
-		utcTime(2026, 7, 6, 10, 0, 0), // 1st Monday July
-		utcTime(2026, 8, 3, 10, 0, 0), // 1st Monday August
-		utcTime(2026, 9, 7, 10, 0, 0), // 1st Monday September
+		time.Date(2026, time.Month(7), 6, 10, 0, 0, 0, time.UTC), // 1st Monday July
+		time.Date(2026, time.Month(8), 3, 10, 0, 0, 0, time.UTC), // 1st Monday August
+		time.Date(2026, time.Month(9), 7, 10, 0, 0, 0, time.UTC), // 1st Monday September
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -438,7 +434,7 @@ func TestExpandMonthlyByOrdinalDayLeapYear(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2024, 2, 25, 10, 0, 0) // Last Sunday of Feb 2024
+	start := time.Date(2024, time.Month(2), 25, 10, 0, 0, 0, time.UTC) // Last Sunday of Feb 2024
 	results := collect(rule, start)
 	if len(results) != 2 {
 		t.Fatalf("got %d results, want 2: %v", len(results), results)
@@ -446,8 +442,8 @@ func TestExpandMonthlyByOrdinalDayLeapYear(t *testing.T) {
 	// Feb 2024: 29 days, last Sunday = 25
 	// Mar 2024: 31 days, last Sunday = 31
 	expected := []time.Time{
-		utcTime(2024, 2, 25, 10, 0, 0),
-		utcTime(2024, 3, 31, 10, 0, 0),
+		time.Date(2024, time.Month(2), 25, 10, 0, 0, 0, time.UTC),
+		time.Date(2024, time.Month(3), 31, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -458,15 +454,15 @@ func TestExpandMonthlyWithByMonth(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 3, 15, 10, 0, 0)
+	start := time.Date(2026, time.Month(3), 15, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 3 {
 		t.Fatalf("got %d results, want 3: %v", len(results), results)
 	}
 	expected := []time.Time{
-		utcTime(2026, 3, 15, 10, 0, 0),
-		utcTime(2026, 6, 15, 10, 0, 0),
-		utcTime(2026, 9, 15, 10, 0, 0),
+		time.Date(2026, time.Month(3), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(9), 15, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -478,15 +474,15 @@ func TestExpandYearlySimple(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2020, 6, 15, 10, 0, 0)
+	start := time.Date(2020, time.Month(6), 15, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 3 {
 		t.Fatalf("got %d results, want 3", len(results))
 	}
 	expected := []time.Time{
-		utcTime(2020, 6, 15, 10, 0, 0),
-		utcTime(2021, 6, 15, 10, 0, 0),
-		utcTime(2022, 6, 15, 10, 0, 0),
+		time.Date(2020, time.Month(6), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2021, time.Month(6), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2022, time.Month(6), 15, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -496,15 +492,15 @@ func TestExpandYearlyInterval(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2020, 6, 15, 10, 0, 0)
+	start := time.Date(2020, time.Month(6), 15, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 3 {
 		t.Fatalf("got %d results, want 3", len(results))
 	}
 	expected := []time.Time{
-		utcTime(2020, 6, 15, 10, 0, 0),
-		utcTime(2022, 6, 15, 10, 0, 0),
-		utcTime(2024, 6, 15, 10, 0, 0),
+		time.Date(2020, time.Month(6), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2022, time.Month(6), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2024, time.Month(6), 15, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -515,16 +511,16 @@ func TestExpandYearlyByMonth(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 1, 15, 10, 0, 0)
+	start := time.Date(2026, time.Month(1), 15, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 4 {
 		t.Fatalf("got %d results, want 4: %v", len(results), results)
 	}
 	expected := []time.Time{
-		utcTime(2026, 1, 15, 10, 0, 0),
-		utcTime(2026, 7, 15, 10, 0, 0),
-		utcTime(2027, 1, 15, 10, 0, 0),
-		utcTime(2027, 7, 15, 10, 0, 0),
+		time.Date(2026, time.Month(1), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(7), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2027, time.Month(1), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2027, time.Month(7), 15, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -535,15 +531,15 @@ func TestExpandYearlyByMonthSkipsBeforeStart(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 5, 15, 10, 0, 0)
+	start := time.Date(2026, time.Month(5), 15, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 3 {
 		t.Fatalf("got %d results, want 3: %v", len(results), results)
 	}
 	expected := []time.Time{
-		utcTime(2026, 6, 15, 10, 0, 0),
-		utcTime(2027, 3, 15, 10, 0, 0),
-		utcTime(2027, 6, 15, 10, 0, 0),
+		time.Date(2026, time.Month(6), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2027, time.Month(3), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2027, time.Month(6), 15, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -554,15 +550,15 @@ func TestExpandYearlyByMonthSkipsInvalidDay(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2024, 2, 29, 10, 0, 0) // Leap year
+	start := time.Date(2024, time.Month(2), 29, 10, 0, 0, 0, time.UTC) // Leap year
 	results := collect(rule, start)
 	if len(results) != 3 {
 		t.Fatalf("got %d results, want 3: %v", len(results), results)
 	}
 	expected := []time.Time{
-		utcTime(2024, 2, 29, 10, 0, 0),
-		utcTime(2028, 2, 29, 10, 0, 0),
-		utcTime(2032, 2, 29, 10, 0, 0),
+		time.Date(2024, time.Month(2), 29, 10, 0, 0, 0, time.UTC),
+		time.Date(2028, time.Month(2), 29, 10, 0, 0, 0, time.UTC),
+		time.Date(2032, time.Month(2), 29, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -572,7 +568,7 @@ func TestExpandYearlyByMonthUntil(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 1, 15, 10, 0, 0)
+	start := time.Date(2026, time.Month(1), 15, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	// Should stop before Jan 2028 (Jan and Jul 2026, Jan and Jul 2027)
 	if len(results) != 4 {
@@ -587,7 +583,7 @@ func TestExpandCountOne(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 6, 12, 10, 0, 0)
+	start := time.Date(2026, time.Month(6), 12, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 1 {
 		t.Fatalf("got %d results, want 1", len(results))
@@ -602,7 +598,7 @@ func TestExpandStartEqualsUntil(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 6, 12, 10, 0, 0)
+	start := time.Date(2026, time.Month(6), 12, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	// start == UNTIL, should yield the first occurrence
 	if len(results) != 1 {
@@ -615,7 +611,7 @@ func TestExpandStartAfterUntil(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 6, 12, 10, 0, 0)
+	start := time.Date(2026, time.Month(6), 12, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 0 {
 		t.Fatalf("got %d results, want 0", len(results))
@@ -624,7 +620,7 @@ func TestExpandStartAfterUntil(t *testing.T) {
 
 func TestExpandSecondly(t *testing.T) {
 	rule := ical.RecurrenceRule{Frequency: ical.Secondly, Count: 10}
-	start := utcTime(2026, 6, 12, 10, 0, 0)
+	start := time.Date(2026, time.Month(6), 12, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 10 {
 		t.Fatalf("got %d results, want 10", len(results))
@@ -644,17 +640,17 @@ func TestExpandDailyLeapYear(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2024, 2, 28, 10, 0, 0)
+	start := time.Date(2024, time.Month(2), 28, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 5 {
 		t.Fatalf("got %d results, want 5", len(results))
 	}
 	expected := []time.Time{
-		utcTime(2024, 2, 28, 10, 0, 0),
-		utcTime(2024, 2, 29, 10, 0, 0), // leap day
-		utcTime(2024, 3, 1, 10, 0, 0),
-		utcTime(2024, 3, 2, 10, 0, 0),
-		utcTime(2024, 3, 3, 10, 0, 0),
+		time.Date(2024, time.Month(2), 28, 10, 0, 0, 0, time.UTC),
+		time.Date(2024, time.Month(2), 29, 10, 0, 0, 0, time.UTC), // leap day
+		time.Date(2024, time.Month(3), 1, 10, 0, 0, 0, time.UTC),
+		time.Date(2024, time.Month(3), 2, 10, 0, 0, 0, time.UTC),
+		time.Date(2024, time.Month(3), 3, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -665,16 +661,16 @@ func TestExpandWeeklyEndOfYear(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2025, 12, 29, 10, 0, 0) // Monday
+	start := time.Date(2025, time.Month(12), 29, 10, 0, 0, 0, time.UTC) // Monday
 	results := collect(rule, start)
 	if len(results) != 4 {
 		t.Fatalf("got %d results, want 4: %v", len(results), results)
 	}
 	expected := []time.Time{
-		utcTime(2025, 12, 29, 10, 0, 0),
-		utcTime(2026, 1, 5, 10, 0, 0),
-		utcTime(2026, 1, 12, 10, 0, 0),
-		utcTime(2026, 1, 19, 10, 0, 0),
+		time.Date(2025, time.Month(12), 29, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(1), 5, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(1), 12, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(1), 19, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -685,16 +681,16 @@ func TestExpandMonthlySimpleEndOfMonth(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 1, 31, 10, 0, 0)
+	start := time.Date(2026, time.Month(1), 31, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 4 {
 		t.Fatalf("got %d results, want 4: %v", len(results), results)
 	}
 	expected := []time.Time{
-		utcTime(2026, 1, 31, 10, 0, 0),
-		utcTime(2026, 2, 28, 10, 0, 0), // truncated to last day of Feb
-		utcTime(2026, 3, 31, 10, 0, 0),
-		utcTime(2026, 4, 30, 10, 0, 0), // truncated to last day of Apr
+		time.Date(2026, time.Month(1), 31, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(2), 28, 10, 0, 0, 0, time.UTC), // truncated to last day of Feb
+		time.Date(2026, time.Month(3), 31, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(4), 30, 10, 0, 0, 0, time.UTC), // truncated to last day of Apr
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -706,16 +702,16 @@ func TestExpandMonthlyByDayAndByMonthDay(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 6, 1, 10, 0, 0)
+	start := time.Date(2026, time.Month(6), 1, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 4 {
 		t.Fatalf("got %d results, want 4: %v", len(results), results)
 	}
 	expected := []time.Time{
-		utcTime(2026, 6, 1, 10, 0, 0),
-		utcTime(2026, 6, 15, 10, 0, 0),
-		utcTime(2026, 7, 1, 10, 0, 0),
-		utcTime(2026, 7, 15, 10, 0, 0),
+		time.Date(2026, time.Month(6), 1, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(7), 1, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(7), 15, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -725,15 +721,15 @@ func TestExpandYearlyByMonthWithInterval(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2020, 6, 15, 10, 0, 0)
+	start := time.Date(2020, time.Month(6), 15, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 3 {
 		t.Fatalf("got %d results, want 3: %v", len(results), results)
 	}
 	expected := []time.Time{
-		utcTime(2020, 6, 15, 10, 0, 0),
-		utcTime(2022, 6, 15, 10, 0, 0),
-		utcTime(2024, 6, 15, 10, 0, 0),
+		time.Date(2020, time.Month(6), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2022, time.Month(6), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2024, time.Month(6), 15, 10, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -745,17 +741,17 @@ func TestExpandHourly(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 6, 12, 10, 0, 0)
+	start := time.Date(2026, time.Month(6), 12, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 5 {
 		t.Fatalf("got %d results, want 5", len(results))
 	}
 	expected := []time.Time{
-		utcTime(2026, 6, 12, 10, 0, 0),
-		utcTime(2026, 6, 12, 11, 0, 0),
-		utcTime(2026, 6, 12, 12, 0, 0),
-		utcTime(2026, 6, 12, 13, 0, 0),
-		utcTime(2026, 6, 12, 14, 0, 0),
+		time.Date(2026, time.Month(6), 12, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 12, 11, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 12, 12, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 12, 13, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 12, 14, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -765,15 +761,15 @@ func TestExpandHourlyInterval(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 6, 12, 10, 0, 0)
+	start := time.Date(2026, time.Month(6), 12, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 3 {
 		t.Fatalf("got %d results, want 3", len(results))
 	}
 	expected := []time.Time{
-		utcTime(2026, 6, 12, 10, 0, 0),
-		utcTime(2026, 6, 12, 12, 0, 0),
-		utcTime(2026, 6, 12, 14, 0, 0),
+		time.Date(2026, time.Month(6), 12, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 12, 12, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 12, 14, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -783,16 +779,16 @@ func TestExpandHourlyWithByHour(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 6, 12, 9, 0, 0)
+	start := time.Date(2026, time.Month(6), 12, 9, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 4 {
 		t.Fatalf("got %d results, want 4: %v", len(results), results)
 	}
 	expected := []time.Time{
-		utcTime(2026, 6, 12, 9, 0, 0),
-		utcTime(2026, 6, 12, 17, 0, 0),
-		utcTime(2026, 6, 13, 9, 0, 0),
-		utcTime(2026, 6, 13, 17, 0, 0),
+		time.Date(2026, time.Month(6), 12, 9, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 12, 17, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 13, 9, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 13, 17, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -804,13 +800,13 @@ func TestExpandMinutely(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 6, 12, 10, 0, 0)
+	start := time.Date(2026, time.Month(6), 12, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 5 {
 		t.Fatalf("got %d results, want 5", len(results))
 	}
 	// Every minute
-	for i := 0; i < len(results); i++ {
+	for i := range results {
 		want := start.Add(time.Duration(i) * time.Minute)
 		if !results[i].Equal(want) {
 			t.Fatalf("results[%d] = %s, want %s", i, results[i], want)
@@ -823,16 +819,16 @@ func TestExpandMinutelyWithByMinute(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 6, 12, 10, 0, 0)
+	start := time.Date(2026, time.Month(6), 12, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 4 {
 		t.Fatalf("got %d results, want 4: %v", len(results), results)
 	}
 	expected := []time.Time{
-		utcTime(2026, 6, 12, 10, 0, 0),
-		utcTime(2026, 6, 12, 10, 30, 0),
-		utcTime(2026, 6, 12, 11, 0, 0),
-		utcTime(2026, 6, 12, 11, 30, 0),
+		time.Date(2026, time.Month(6), 12, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 12, 10, 30, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 12, 11, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 12, 11, 30, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -844,17 +840,17 @@ func TestExpandSecondlyWithBySecond(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 6, 12, 10, 0, 0)
+	start := time.Date(2026, time.Month(6), 12, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 5 {
 		t.Fatalf("got %d results, want 5: %v", len(results), results)
 	}
 	expected := []time.Time{
-		utcTime(2026, 6, 12, 10, 0, 0),
-		utcTime(2026, 6, 12, 10, 0, 30),
-		utcTime(2026, 6, 12, 10, 1, 0),
-		utcTime(2026, 6, 12, 10, 1, 30),
-		utcTime(2026, 6, 12, 10, 2, 0),
+		time.Date(2026, time.Month(6), 12, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 12, 10, 0, 30, 0, time.UTC),
+		time.Date(2026, time.Month(6), 12, 10, 1, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 12, 10, 1, 30, 0, time.UTC),
+		time.Date(2026, time.Month(6), 12, 10, 2, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -867,15 +863,15 @@ func TestExpandYearlyByDayFirstSunday(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2016, 1, 3, 0, 0, 0) // 1st Sunday of 2016
+	start := time.Date(2016, time.Month(1), 3, 0, 0, 0, 0, time.UTC) // 1st Sunday of 2016
 	results := collect(rule, start)
 	if len(results) != 3 {
 		t.Fatalf("got %d results, want 3: %v", len(results), results)
 	}
 	expected := []time.Time{
-		utcTime(2016, 1, 3, 0, 0, 0),
-		utcTime(2017, 1, 1, 0, 0, 0),
-		utcTime(2018, 1, 7, 0, 0, 0),
+		time.Date(2016, time.Month(1), 3, 0, 0, 0, 0, time.UTC),
+		time.Date(2017, time.Month(1), 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2018, time.Month(1), 7, 0, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }
@@ -886,7 +882,7 @@ func TestExpandYearlyByDay53rdMonday(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(1984, 12, 31, 0, 0, 0) // 53rd Monday of 1984
+	start := time.Date(1984, time.Month(12), 31, 0, 0, 0, 0, time.UTC) // 53rd Monday of 1984
 	results := collect(rule, start)
 	if len(results) != 1 {
 		t.Fatalf("got %d results, want 1", len(results))
@@ -902,7 +898,7 @@ func TestExpandYearlyByDayLastTuesday(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(1999, 12, 28, 0, 0, 0) // Last Tuesday of 1999
+	start := time.Date(1999, time.Month(12), 28, 0, 0, 0, 0, time.UTC) // Last Tuesday of 1999
 	results := collect(rule, start)
 	if len(results) != 3 {
 		t.Fatalf("got %d results, want 3: %v", len(results), results)
@@ -920,7 +916,7 @@ func TestExpandYearlyByDay17thToLastWednesday(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2000, 9, 6, 0, 0, 0) // 17th to last Wed of 2000
+	start := time.Date(2000, time.Month(9), 6, 0, 0, 0, 0, time.UTC) // 17th to last Wed of 2000
 	results := collect(rule, start)
 	if len(results) != 1 {
 		t.Fatalf("got %d results, want 1", len(results))
@@ -936,7 +932,7 @@ func TestExpandYearlyByDay9thMonday(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2023, 2, 27, 0, 0, 0) // 9th Monday of 2023
+	start := time.Date(2023, time.Month(2), 27, 0, 0, 0, 0, time.UTC) // 9th Monday of 2023
 	results := collect(rule, start)
 	if len(results) != 2 {
 		t.Fatalf("got %d results, want 2: %v", len(results), results)
@@ -956,16 +952,285 @@ func TestExpandMonthlyBySetPos(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := utcTime(2026, 1, 1, 10, 0, 0)
+	start := time.Date(2026, time.Month(1), 1, 10, 0, 0, 0, time.UTC)
 	results := collect(rule, start)
 	if len(results) != 3 {
 		t.Fatalf("got %d results, want 3: %v", len(results), results)
 	}
 	// January: 30, February: 15 (no 30 in Feb), March: 30
 	expected := []time.Time{
-		utcTime(2026, 1, 30, 10, 0, 0),
-		utcTime(2026, 2, 15, 10, 0, 0),
-		utcTime(2026, 3, 30, 10, 0, 0),
+		time.Date(2026, time.Month(1), 30, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(2), 15, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(3), 30, 10, 0, 0, 0, time.UTC),
+	}
+	assertDatesEqual(t, results, expected)
+}
+
+// ---- BYHOUR/BYMINUTE/BYSECOND on DAILY ----
+
+func TestExpandDailyWithByHour(t *testing.T) {
+	rule, err := ical.ParseRecurrenceRule("FREQ=DAILY;BYHOUR=9,17;COUNT=4")
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2026, time.Month(6), 12, 10, 0, 0, 0, time.UTC)
+	results := collect(rule, start)
+	if len(results) != 4 {
+		t.Fatalf("got %d results, want 4: %v", len(results), results)
+	}
+	expected := []time.Time{
+		time.Date(2026, time.Month(6), 12, 17, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 13, 9, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 13, 17, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 14, 9, 0, 0, 0, time.UTC),
+	}
+	assertDatesEqual(t, results, expected)
+}
+
+func TestExpandDailyWithByHourAndMinute(t *testing.T) {
+	rule, err := ical.ParseRecurrenceRule("FREQ=DAILY;BYHOUR=9;BYMINUTE=0,30;COUNT=4")
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2026, time.Month(6), 12, 9, 0, 0, 0, time.UTC)
+	results := collect(rule, start)
+	if len(results) != 4 {
+		t.Fatalf("got %d results, want 4: %v", len(results), results)
+	}
+	expected := []time.Time{
+		time.Date(2026, time.Month(6), 12, 9, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 12, 9, 30, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 13, 9, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 13, 9, 30, 0, 0, time.UTC),
+	}
+	assertDatesEqual(t, results, expected)
+}
+
+// ---- BYHOUR on WEEKLY ----
+
+func TestExpandWeeklyWithByHour(t *testing.T) {
+	rule, err := ical.ParseRecurrenceRule("FREQ=WEEKLY;BYDAY=MO;BYHOUR=10,14;COUNT=4")
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2026, time.Month(6), 1, 9, 0, 0, 0, time.UTC) // Monday
+	results := collect(rule, start)
+	if len(results) != 4 {
+		t.Fatalf("got %d results, want 4: %v", len(results), results)
+	}
+	expected := []time.Time{
+		time.Date(2026, time.Month(6), 1, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 1, 14, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 8, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(6), 8, 14, 0, 0, 0, time.UTC),
+	}
+	assertDatesEqual(t, results, expected)
+}
+
+// ---- BYHOUR on MONTHLY ----
+
+func TestExpandMonthlyWithByHour(t *testing.T) {
+	rule, err := ical.ParseRecurrenceRule("FREQ=MONTHLY;BYHOUR=9,17;COUNT=4")
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2026, time.Month(6), 15, 10, 0, 0, 0, time.UTC)
+	results := collect(rule, start)
+	if len(results) != 4 {
+		t.Fatalf("got %d results, want 4: %v", len(results), results)
+	}
+	expected := []time.Time{
+		time.Date(2026, time.Month(6), 15, 17, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(7), 15, 9, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(7), 15, 17, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(8), 15, 9, 0, 0, 0, time.UTC),
+	}
+	assertDatesEqual(t, results, expected)
+}
+
+// ---- BYHOUR on YEARLY ----
+
+func TestExpandYearlyWithByHour(t *testing.T) {
+	rule, err := ical.ParseRecurrenceRule("FREQ=YEARLY;BYHOUR=9,17;COUNT=3")
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2026, time.Month(6), 15, 10, 0, 0, 0, time.UTC)
+	results := collect(rule, start)
+	if len(results) != 3 {
+		t.Fatalf("got %d results, want 3: %v", len(results), results)
+	}
+	expected := []time.Time{
+		time.Date(2026, time.Month(6), 15, 17, 0, 0, 0, time.UTC),
+		time.Date(2027, time.Month(6), 15, 9, 0, 0, 0, time.UTC),
+		time.Date(2027, time.Month(6), 15, 17, 0, 0, 0, time.UTC),
+	}
+	assertDatesEqual(t, results, expected)
+}
+
+// ---- BYYEARDAY ----
+
+func TestExpandYearlyByYearDay(t *testing.T) {
+	rule, err := ical.ParseRecurrenceRule("FREQ=YEARLY;BYYEARDAY=1,100,200;COUNT=5")
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2026, time.Month(1), 1, 10, 0, 0, 0, time.UTC)
+	results := collect(rule, start)
+	if len(results) != 5 {
+		t.Fatalf("got %d results, want 5: %v", len(results), results)
+	}
+	expected := []time.Time{
+		time.Date(2026, time.Month(1), 1, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(4), 10, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(7), 19, 10, 0, 0, 0, time.UTC),
+		time.Date(2027, time.Month(1), 1, 10, 0, 0, 0, time.UTC),
+		time.Date(2027, time.Month(4), 10, 10, 0, 0, 0, time.UTC),
+	}
+	assertDatesEqual(t, results, expected)
+}
+
+func TestExpandYearlyByYearDayNegative(t *testing.T) {
+	rule, err := ical.ParseRecurrenceRule("FREQ=YEARLY;BYYEARDAY=-1;COUNT=2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2025, time.Month(12), 31, 10, 0, 0, 0, time.UTC)
+	results := collect(rule, start)
+	if len(results) != 2 {
+		t.Fatalf("got %d results, want 2: %v", len(results), results)
+	}
+	expected := []time.Time{
+		time.Date(2025, time.Month(12), 31, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(12), 31, 10, 0, 0, 0, time.UTC),
+	}
+	assertDatesEqual(t, results, expected)
+}
+
+// ---- BYWEEKNO ----
+
+func TestExpandYearlyByWeekNo(t *testing.T) {
+	rule, err := ical.ParseRecurrenceRule("FREQ=YEARLY;BYWEEKNO=20;BYDAY=MO;COUNT=3")
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2026, time.Month(5), 11, 10, 0, 0, 0, time.UTC)
+	results := collect(rule, start)
+	if len(results) != 3 {
+		t.Fatalf("got %d results, want 3: %v", len(results), results)
+	}
+	for _, r := range results {
+		if r.Weekday() != time.Monday {
+			t.Fatalf("expected Monday, got %s at %s", r.Weekday(), r)
+		}
+	}
+}
+
+func TestExpandYearlyByWeekNoImplicitDay(t *testing.T) {
+	rule, err := ical.ParseRecurrenceRule("FREQ=YEARLY;BYWEEKNO=1;COUNT=3")
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2026, time.Month(1), 5, 10, 0, 0, 0, time.UTC) // Monday in week 1 of 2026
+	results := collect(rule, start)
+	if len(results) != 3 {
+		t.Fatalf("got %d results, want 3: %v", len(results), results)
+	}
+	for _, r := range results {
+		if r.Weekday() != time.Monday {
+			t.Fatalf("expected Monday, got %s at %s", r.Weekday(), r)
+		}
+	}
+}
+
+// ---- UNTIL with DATE type ----
+
+func TestExpandDailyUntilDate(t *testing.T) {
+	rule, err := ical.ParseRecurrenceRule("FREQ=DAILY;UNTIL=19960410")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !rule.UntilIsDate {
+		t.Fatal("expected UntilIsDate to be true for DATE-typed UNTIL")
+	}
+	start := time.Date(1996, time.Month(4), 1, 10, 0, 0, 0, time.UTC)
+	results := collect(rule, start)
+	if len(results) != 10 {
+		t.Fatalf("got %d results, want 10: %v", len(results), results)
+	}
+	want := time.Date(1996, time.Month(4), 10, 10, 0, 0, 0, time.UTC)
+	if !results[9].Equal(want) {
+		t.Fatalf("last result = %s, want %s", results[9], want)
+	}
+}
+
+func TestParseRRuleUntilDate(t *testing.T) {
+	rule, err := ical.ParseRecurrenceRule("FREQ=YEARLY;UNTIL=20260115;BYMONTH=1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !rule.UntilIsDate {
+		t.Fatal("expected UntilIsDate=true for DATE UNTIL")
+	}
+	s := rule.String()
+	if !strings.Contains(s, "UNTIL=20260115") || strings.Contains(s, "UNTIL=20260115T") {
+		t.Fatalf("expected DATE-format UNTIL, got %q", s)
+	}
+}
+
+// ---- BYSETPOS with different frequencies ----
+
+func TestExpandYearlyBySetPos(t *testing.T) {
+	rule, err := ical.ParseRecurrenceRule("FREQ=YEARLY;BYMONTH=1,6;BYMONTHDAY=1,15;BYSETPOS=1;COUNT=3")
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2026, time.Month(1), 1, 10, 0, 0, 0, time.UTC)
+	results := collect(rule, start)
+	if len(results) != 3 {
+		t.Fatalf("got %d results, want 3: %v", len(results), results)
+	}
+	for i, r := range results {
+		if r.Day() != 1 || r.Month() != time.January {
+			t.Fatalf("result[%d] expected Jan 1, got %s", i, r)
+		}
+	}
+}
+
+func TestExpandDailyBySetPos(t *testing.T) {
+	rule, err := ical.ParseRecurrenceRule("FREQ=DAILY;BYHOUR=9,12,17;BYSETPOS=-1;COUNT=3")
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2026, time.Month(6), 12, 10, 0, 0, 0, time.UTC)
+	results := collect(rule, start)
+	if len(results) != 3 {
+		t.Fatalf("got %d results, want 3: %v", len(results), results)
+	}
+	for _, r := range results {
+		if r.Hour() != 17 {
+			t.Fatalf("expected hour 17 (last per day), got %s", r)
+		}
+	}
+}
+
+// ---- Ordinal BYDAY on YEARLY with BYHOUR ----
+
+func TestExpandYearlyByDayWithByHour(t *testing.T) {
+	rule, err := ical.ParseRecurrenceRule("FREQ=YEARLY;BYDAY=1SU;BYHOUR=9,17;COUNT=4")
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2026, time.Month(1), 4, 9, 0, 0, 0, time.UTC)
+	results := collect(rule, start)
+	if len(results) != 4 {
+		t.Fatalf("got %d results, want 4: %v", len(results), results)
+	}
+	expected := []time.Time{
+		time.Date(2026, time.Month(1), 4, 9, 0, 0, 0, time.UTC),
+		time.Date(2026, time.Month(1), 4, 17, 0, 0, 0, time.UTC),
+		time.Date(2027, time.Month(1), 3, 9, 0, 0, 0, time.UTC),
+		time.Date(2027, time.Month(1), 3, 17, 0, 0, 0, time.UTC),
 	}
 	assertDatesEqual(t, results, expected)
 }

@@ -20,9 +20,6 @@ type Property struct {
 
 func (p Property) normalized() Property {
 	p.Name = strings.ToUpper(p.Name)
-	if p.Params == nil {
-		p.Params = Params{}
-	}
 	params := make(Params, len(p.Params))
 	for k, v := range p.Params {
 		cp := make([]string, len(v))
@@ -92,11 +89,13 @@ func (p Params) Values(name string) []string {
 
 // Set replaces all values for a parameter name with the given values.
 // Names are case-insensitive and normalized to uppercase.
-func (p Params) Set(name string, values ...string) {
+// It returns p so calls can be chained: Params{}.Set(ParamValue, ValueTime).Set(ParamTZID, tzid).
+func (p Params) Set(name string, values ...string) Params {
 	if p == nil {
-		return
+		p = make(Params)
 	}
 	cp := make([]string, len(values))
 	copy(cp, values)
 	p[strings.ToUpper(name)] = cp
+	return p
 }

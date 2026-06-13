@@ -3,7 +3,7 @@ package ical
 import "fmt"
 
 // ValidationError describes one RFC 5545 component validation failure detected
-// by Component.Validate.
+// by [Component.Validate].
 //
 // Fields:
 //   - Component: the component name where the failure occurred.
@@ -23,6 +23,16 @@ func (e ValidationError) Error() string {
 	return e.Message
 }
 
+type Validator interface {
+	Validate(c *Component) []ValidationError
+}
+
+var validatorsByComponent = map[string][]Validator{}
+
+func RegisterValidator(component string, v Validator) {
+	validatorsByComponent[component] = append(validatorsByComponent[component], v)
+}
+
 // componentRules encodes RFC 5545 property constraints for a component type.
 //
 // Each field maps to a specific conformance rule:
@@ -38,12 +48,6 @@ type componentRules struct {
 	inclusive  [][2]string
 }
 
-// rulesByComponent defines RFC 5545 property constraints for each standard iCalendar component.
-// The rules are sourced from Section 3.6 of RFC 5545 and enforce:
-//   - required properties (e.g., UID and DTSTAMP for VEVENT),
-//   - singleton properties (e.g., DTSTART may only appear once),
-//   - mutual exclusion (e.g., DTEND and DURATION cannot both be present), and
-//   - property co-occurrence (e.g., DURATION requires REPEAT in VALARM).
 var rulesByComponent = map[string]componentRules{
 	CompVCalendar: {
 		required:   []string{PropProdID, PropVersion},
@@ -104,14 +108,18 @@ func (c *Component) validateInto(parent string) []ValidationError {
 			Rule:      "nesting",
 			Message:   fmt.Sprintf("%s cannot be nested in %s", c.Name, parent),
 		})
-	} else if rules, ok := rulesByComponent[c.Name]; ok {
+	}
+
+	if rules, ok := rulesByComponent[c.Name]; ok {
 		counts := c.propertyCounts()
 		errs = append(errs, c.checkRequired(rules.required, counts)...)
 		errs = append(errs, c.checkSingletons(rules.singletons, counts)...)
 		errs = append(errs, c.checkExclusive(rules.exclusive, counts)...)
 		errs = append(errs, c.checkInclusive(rules.inclusive, counts)...)
+	}
 
-		// TODO 定义一种校验接口，让用户可以为组件或属性添加校验规则
+	for _, v := range validatorsByComponent[c.Name] {
+		errs = append(errs, v.Validate(c)...)
 	}
 
 	for _, child := range c.Components {

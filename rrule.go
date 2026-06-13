@@ -10,8 +10,7 @@ import (
 	"time"
 )
 
-// Frequency is an RFC 5545 FREQ value. Valid values are Secondly, Minutely,
-// Hourly, Daily, Weekly, Monthly, and Yearly.
+// Frequency is an RFC 5545 FREQ value.
 type Frequency string
 
 const (
@@ -24,9 +23,7 @@ const (
 	Yearly   Frequency = "YEARLY"
 )
 
-// Weekday is an RFC 5545 BYDAY weekday token. Valid values are Monday (MO),
-// Tuesday (TU), Wednesday (WE), Thursday (TH), Friday (FR), Saturday (SA),
-// and Sunday (SU).
+// Weekday is an RFC 5545 BYDAY weekday token.
 type Weekday string
 
 const (
@@ -91,8 +88,8 @@ func ParseWeekdayNum(value string) (WeekdayNum, error) {
 //   - WeekStart: WKST value; defaults to Monday when empty.
 //   - Parts: raw key→value map that preserves RFC parts not yet modeled as typed fields.
 //
-// Use ParseRecurrenceRule to create a RecurrenceRule, or construct one directly
-// and pass it to Component.AddRecurrenceRule.
+// Use [ParseRecurrenceRule] to create a RecurrenceRule, or construct one directly
+// and pass it to [Component.AddRecurrenceRule].
 type RecurrenceRule struct {
 	Frequency   Frequency
 	Count       int
@@ -347,10 +344,7 @@ func validWeekday(day Weekday) bool {
 }
 
 // Expand returns an iterator over recurrence start instants generated from
-// start. Each call returns the next time and true, or the zero time and
-// false when the sequence is exhausted. The iterator terminates on COUNT or
-// UNTIL; callers should enforce their own bound if needed. It supports the
-// common finite RFC 5545 patterns represented by RecurrenceRule fields.
+// start.
 func (r RecurrenceRule) Expand(start time.Time) iter.Seq[time.Time] {
 	limit := r.Count
 	if limit <= 0 {

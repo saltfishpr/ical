@@ -173,9 +173,7 @@ func TestParseParameterPreservesBackslashAndDecodesCaretEscapes(t *testing.T) {
 
 func TestSerializedParameterBackslashRoundTrips(t *testing.T) {
 	event := ical.NewEvent("param-roundtrip@example.com", time.Date(2026, 6, 12, 1, 2, 3, 0, time.UTC))
-	event.AddCalAddress(ical.PropAttendee, "a@example.com", ical.Params{
-		"CN": {"C:\\Temp"},
-	})
+	event.AddCalAddress(ical.PropAttendee, "a@example.com", ical.Params{}.Set("CN", "C:\\Temp"))
 
 	parsed, err := ical.ParseComponent([]byte(event.String()))
 	if err != nil {

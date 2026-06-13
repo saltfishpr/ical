@@ -24,193 +24,187 @@ func NewComponent(name string) *Component {
 
 // NewCalendar creates a VCALENDAR with required VERSION and PRODID values.
 func NewCalendar(prodid string) *Component {
-	c := NewComponent(CompVCalendar)
-	c.AddText(PropVersion, "2.0")
-	c.AddText(PropProdID, prodid)
-	return c
+	return NewComponent(CompVCalendar).
+		AddText(PropVersion, "2.0").
+		AddText(PropProdID, prodid)
 }
 
 // NewEvent creates a VEVENT with required UID and DTSTAMP values.
 func NewEvent(uid string, stamp time.Time) *Component {
-	e := NewComponent(CompVEvent)
-	e.AddText(PropUID, uid)
-	e.AddDateTime(PropDTStamp, stamp.UTC())
-	return e
+	return NewComponent(CompVEvent).
+		AddText(PropUID, uid).
+		AddDateTime(PropDTStamp, stamp.UTC())
 }
 
 // NewTodo creates a VTODO with required UID and DTSTAMP values.
 func NewTodo(uid string, stamp time.Time) *Component {
-	t := NewComponent(CompVTodo)
-	t.AddText(PropUID, uid)
-	t.AddDateTime(PropDTStamp, stamp.UTC())
-	return t
+	return NewComponent(CompVTodo).
+		AddText(PropUID, uid).
+		AddDateTime(PropDTStamp, stamp.UTC())
 }
 
 // NewJournal creates a VJOURNAL with required UID and DTSTAMP values.
 func NewJournal(uid string, stamp time.Time) *Component {
-	j := NewComponent(CompVJournal)
-	j.AddText(PropUID, uid)
-	j.AddDateTime(PropDTStamp, stamp.UTC())
-	return j
+	return NewComponent(CompVJournal).
+		AddText(PropUID, uid).
+		AddDateTime(PropDTStamp, stamp.UTC())
 }
 
 // NewFreeBusy creates a VFREEBUSY with required UID and DTSTAMP values.
 func NewFreeBusy(uid string, stamp time.Time) *Component {
-	f := NewComponent(CompVFreeBusy)
-	f.AddText(PropUID, uid)
-	f.AddDateTime(PropDTStamp, stamp.UTC())
-	return f
+	return NewComponent(CompVFreeBusy).
+		AddText(PropUID, uid).
+		AddDateTime(PropDTStamp, stamp.UTC())
 }
 
 // NewTimezone creates a VTIMEZONE with the required TZID value.
 func NewTimezone(tzid string) *Component {
-	tz := NewComponent(CompVTimezone)
-	tz.AddText(PropTZID, tzid)
-	return tz
+	return NewComponent(CompVTimezone).
+		AddText(PropTZID, tzid)
 }
 
 // NewTimezoneStandard creates a STANDARD observance component with the required
 // DTSTART, TZOFFSETFROM, and TZOFFSETTO values.
 func NewTimezoneStandard(dtstart time.Time, offsetFrom, offsetTo time.Duration) *Component {
-	c := NewComponent(CompStandard)
-	c.AddDateTime(PropDTStart, dtstart)
-	c.AddUTCOffset(PropTZOffsetFrom, offsetFrom)
-	c.AddUTCOffset(PropTZOffsetTo, offsetTo)
-	return c
+	return NewComponent(CompStandard).
+		AddDateTime(PropDTStart, dtstart).
+		AddUTCOffset(PropTZOffsetFrom, offsetFrom).
+		AddUTCOffset(PropTZOffsetTo, offsetTo)
 }
 
 // NewTimezoneDaylight creates a DAYLIGHT observance component with the required
 // DTSTART, TZOFFSETFROM, and TZOFFSETTO values.
 func NewTimezoneDaylight(dtstart time.Time, offsetFrom, offsetTo time.Duration) *Component {
-	c := NewComponent(CompDaylight)
-	c.AddDateTime(PropDTStart, dtstart)
-	c.AddUTCOffset(PropTZOffsetFrom, offsetFrom)
-	c.AddUTCOffset(PropTZOffsetTo, offsetTo)
-	return c
+	return NewComponent(CompDaylight).
+		AddDateTime(PropDTStart, dtstart).
+		AddUTCOffset(PropTZOffsetFrom, offsetFrom).
+		AddUTCOffset(PropTZOffsetTo, offsetTo)
 }
 
 // AddProperty appends a raw property. Unknown RFC/IANA/X-* properties are
 // intentionally preserved by this generic model.
-func (c *Component) AddProperty(p Property) {
+func (c *Component) AddProperty(p Property) *Component {
 	c.Properties = append(c.Properties, p.normalized())
+	return c
 }
 
 // AddText appends a TEXT property, escaping the value for RFC 5545 output.
-func (c *Component) AddText(name, value string) {
-	c.AddProperty(Property{Name: name, Value: EncodeText(value)})
+func (c *Component) AddText(name, value string) *Component {
+	return c.AddProperty(Property{Name: name, Value: EncodeText(value)})
 }
 
 // AddBoolean appends a BOOLEAN property.
-func (c *Component) AddBoolean(name string, value bool) {
-	c.AddProperty(Property{Name: name, Value: FormatBoolean(value)})
+func (c *Component) AddBoolean(name string, value bool) *Component {
+	return c.AddProperty(Property{Name: name, Value: FormatBoolean(value)})
 }
 
 // AddInteger appends an INTEGER property.
-func (c *Component) AddInteger(name string, value int) {
-	c.AddProperty(Property{Name: name, Value: FormatInteger(value)})
+func (c *Component) AddInteger(name string, value int) *Component {
+	return c.AddProperty(Property{Name: name, Value: FormatInteger(value)})
 }
 
 // AddFloat appends a FLOAT property.
-func (c *Component) AddFloat(name string, value float64) {
-	c.AddProperty(Property{Name: name, Value: FormatFloat(value)})
+func (c *Component) AddFloat(name string, value float64) *Component {
+	return c.AddProperty(Property{Name: name, Value: FormatFloat(value)})
 }
 
 // AddGeo appends a GEO property.
-func (c *Component) AddGeo(value Geo) {
-	c.AddProperty(Property{Name: PropGeo, Value: value.String()})
+func (c *Component) AddGeo(value Geo) *Component {
+	return c.AddProperty(Property{Name: PropGeo, Value: value.String()})
 }
 
 // AddURI appends a URI property.
-func (c *Component) AddURI(name, value string) {
-	c.AddProperty(Property{Name: name, Value: value})
+func (c *Component) AddURI(name, value string) *Component {
+	return c.AddProperty(Property{Name: name, Value: value})
 }
 
 // AddTime appends a TIME property with VALUE=TIME.
-func (c *Component) AddTime(name string, value Time) {
-	c.AddProperty(Property{Name: name, Params: Params{ParamValue: {ValueTime}}, Value: value.String()})
+func (c *Component) AddTime(name string, value Time) *Component {
+	return c.AddProperty(Property{Name: name, Params: Params{}.Set(ParamValue, ValueTime), Value: value.String()})
 }
 
 // AddTimeWithTZID appends a local TIME property with a TZID parameter.
-func (c *Component) AddTimeWithTZID(name string, value Time, tzid string) {
-	c.AddProperty(Property{Name: name, Params: Params{ParamTZID: {tzid}, ParamValue: {ValueTime}}, Value: value.String()})
+func (c *Component) AddTimeWithTZID(name string, value Time, tzid string) *Component {
+	return c.AddProperty(Property{Name: name, Params: Params{}.Set(ParamValue, ValueTime).Set(ParamTZID, tzid), Value: value.String()})
 }
 
 // AddBinary appends a BINARY property using BASE64 inline encoding.
-func (c *Component) AddBinary(name string, value []byte) {
-	c.AddProperty(Property{Name: name, Params: Params{ParamEncoding: {ValueBase64}, ParamValue: {ValueBinary}}, Value: FormatBinary(value)})
+func (c *Component) AddBinary(name string, value []byte) *Component {
+	return c.AddProperty(Property{Name: name, Params: Params{}.Set(ParamEncoding, ValueBase64).Set(ParamValue, ValueBinary), Value: FormatBinary(value)})
 }
 
 // AddCalAddress appends a CAL-ADDRESS property. A bare email address is
 // normalized to a mailto URI.
-func (c *Component) AddCalAddress(name, value string, params Params) {
-	c.AddProperty(Property{Name: name, Params: params, Value: FormatCalAddress(value)})
+func (c *Component) AddCalAddress(name, value string, params Params) *Component {
+	return c.AddProperty(Property{Name: name, Params: params, Value: FormatCalAddress(value)})
 }
 
 // AddDateTime appends a DATE-TIME property.
-func (c *Component) AddDateTime(name string, value time.Time) {
-	c.AddProperty(Property{Name: name, Value: FormatDateTime(value)})
+func (c *Component) AddDateTime(name string, value time.Time) *Component {
+	return c.AddProperty(Property{Name: name, Value: FormatDateTime(value)})
 }
 
 // AddDateTimes appends a comma-separated DATE-TIME property.
-func (c *Component) AddDateTimes(name string, values ...time.Time) {
+func (c *Component) AddDateTimes(name string, values ...time.Time) *Component {
 	encoded := make([]string, len(values))
 	for i, value := range values {
 		encoded[i] = FormatDateTime(value)
 	}
-	c.AddProperty(Property{Name: name, Value: strings.Join(encoded, ",")})
+	return c.AddProperty(Property{Name: name, Value: strings.Join(encoded, ",")})
 }
 
 // AddDateTimeWithTZID appends a local DATE-TIME property with a TZID parameter.
-func (c *Component) AddDateTimeWithTZID(name string, value time.Time, tzid string) {
-	c.AddProperty(Property{Name: name, Params: Params{ParamTZID: {tzid}}, Value: value.Format("20060102T150405")})
+func (c *Component) AddDateTimeWithTZID(name string, value time.Time, tzid string) *Component {
+	return c.AddProperty(Property{Name: name, Params: Params{}.Set(ParamTZID, tzid), Value: value.Format("20060102T150405")})
 }
 
 // AddDate appends a DATE property with VALUE=DATE.
-func (c *Component) AddDate(name string, value time.Time) {
-	c.AddProperty(Property{Name: name, Params: Params{ParamValue: {ValueDate}}, Value: value.Format("20060102")})
+func (c *Component) AddDate(name string, value time.Time) *Component {
+	return c.AddProperty(Property{Name: name, Params: Params{}.Set(ParamValue, ValueDate), Value: value.Format("20060102")})
 }
 
 // AddDates appends a comma-separated DATE property with VALUE=DATE.
-func (c *Component) AddDates(name string, values ...time.Time) {
+func (c *Component) AddDates(name string, values ...time.Time) *Component {
 	encoded := make([]string, len(values))
 	for i, value := range values {
 		encoded[i] = value.Format("20060102")
 	}
-	c.AddProperty(Property{Name: name, Params: Params{ParamValue: {ValueDate}}, Value: strings.Join(encoded, ",")})
+	return c.AddProperty(Property{Name: name, Params: Params{}.Set(ParamValue, ValueDate), Value: strings.Join(encoded, ",")})
 }
 
 // AddDuration appends a DURATION property.
-func (c *Component) AddDuration(name string, value time.Duration) {
-	c.AddProperty(Property{Name: name, Value: FormatDuration(value)})
+func (c *Component) AddDuration(name string, value time.Duration) *Component {
+	return c.AddProperty(Property{Name: name, Value: FormatDuration(value)})
 }
 
 // AddUTCOffset appends a UTC-OFFSET property.
-func (c *Component) AddUTCOffset(name string, value time.Duration) {
-	c.AddProperty(Property{Name: name, Value: FormatUTCOffset(value)})
+func (c *Component) AddUTCOffset(name string, value time.Duration) *Component {
+	return c.AddProperty(Property{Name: name, Value: FormatUTCOffset(value)})
 }
 
 // AddPeriod appends a PERIOD property with VALUE=PERIOD.
-func (c *Component) AddPeriod(name string, value Period) {
-	c.AddProperty(Property{Name: name, Params: Params{ParamValue: {ValuePeriod}}, Value: value.String()})
+func (c *Component) AddPeriod(name string, value Period) *Component {
+	return c.AddProperty(Property{Name: name, Params: Params{}.Set(ParamValue, ValuePeriod), Value: value.String()})
 }
 
 // AddPeriods appends a comma-separated PERIOD property with VALUE=PERIOD.
-func (c *Component) AddPeriods(name string, values ...Period) {
+func (c *Component) AddPeriods(name string, values ...Period) *Component {
 	encoded := make([]string, len(values))
 	for i, value := range values {
 		encoded[i] = value.String()
 	}
-	c.AddProperty(Property{Name: name, Params: Params{ParamValue: {ValuePeriod}}, Value: strings.Join(encoded, ",")})
+	return c.AddProperty(Property{Name: name, Params: Params{}.Set(ParamValue, ValuePeriod), Value: strings.Join(encoded, ",")})
 }
 
 // AddRecurrenceRule appends an RRULE property.
-func (c *Component) AddRecurrenceRule(rule RecurrenceRule) {
-	c.AddProperty(Property{Name: PropRRule, Value: rule.String()})
+func (c *Component) AddRecurrenceRule(rule RecurrenceRule) *Component {
+	return c.AddProperty(Property{Name: PropRRule, Value: rule.String()})
 }
 
 // AddComponent appends a child component.
-func (c *Component) AddComponent(child *Component) {
+func (c *Component) AddComponent(child *Component) *Component {
 	c.Components = append(c.Components, child)
+	return c
 }
 
 // PropertiesByName returns properties with the given case-insensitive name.

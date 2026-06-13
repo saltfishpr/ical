@@ -4,7 +4,7 @@ import "strings"
 
 // EncodeText escapes special characters (\, ;, ,, newline) in an RFC 5545
 // TEXT value. Use this when you need to manually create a TEXT property value;
-// Component.AddText applies this encoding automatically.
+// [Component.AddText] applies this encoding automatically.
 func EncodeText(value string) string {
 	var b strings.Builder
 	for _, r := range value {
@@ -26,7 +26,7 @@ func EncodeText(value string) string {
 }
 
 // DecodeText unescapes RFC 5545 escape sequences (\n, \\, \;, \,) in a TEXT
-// value. Component.Text applies this decoding automatically.
+// value. [Component.Text] applies this decoding automatically.
 func DecodeText(value string) string {
 	var b strings.Builder
 	escaped := false

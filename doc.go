@@ -20,9 +20,10 @@
 // accepts the minimum mandatory arguments so callers cannot forget them.
 //
 // Typed Add methods ([Component.AddText], [Component.AddDateTime],
-// [Component.AddDuration], etc.) handle value formatting according to RFC 5545
-// rules. Corresponding typed accessors ([Component.Text], [Component.DateTime],
-// [Component.Duration], etc.) parse the first matching property.
+// [Component.AddDuration], etc.) return *Component for chaining and handle
+// value formatting according to RFC 5545 rules. Corresponding typed accessors
+// ([Component.Text], [Component.DateTime], [Component.Duration], etc.) parse
+// the first matching property.
 //
 // # Serialization
 //

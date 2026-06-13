@@ -26,9 +26,9 @@ cal, err := ical.ParseCalendar(data)
 
 ```go
 cal := ical.NewCalendar("//example.com//product")
-event := ical.NewEvent("uid-1@example.com", time.Now())
-event.AddDateTime(ical.PropDTStart, time.Now())
-event.AddText(ical.PropSummary, "Weekly Team Meeting")
+event := ical.NewEvent("uid-1@example.com", time.Now()).
+	AddDateTime(ical.PropDTStart, time.Now()).
+	AddText(ical.PropSummary, "Weekly Team Meeting")
 cal.AddComponent(event)
 
 fmt.Println(cal) // Serialize to RFC 5545 text
@@ -66,7 +66,6 @@ for dt := range rule.Expand(time.Date(2026, 1, 1, 9, 0, 0, 0, time.UTC)) {
 | `NewJournal(uid, stamp)`  | VJOURNAL  |
 | `NewFreeBusy(uid, stamp)` | VFREEBUSY |
 | `NewTimezone(tzid)`       | VTIMEZONE |
-| `NewAlarm()`              | VALARM    |
 
 ### Property Access
 
@@ -86,7 +85,7 @@ for dt := range rule.Expand(time.Date(2026, 1, 1, 9, 0, 0, 0, time.UTC)) {
 | `AddBinary` / `Binary`                 | BINARY        |
 | `AddCalAddress`                        | CAL-ADDRESS   |
 | `AddUTCOffset` / `UTCOffset`           | UTC-OFFSET    |
-| `AddRecurrenceRule` / `RecurrenceRule` | RECUR         |
+| `AddRecurrenceRule` / `RecurrenceRule` | RRULE         |
 
 ### Value Types
 

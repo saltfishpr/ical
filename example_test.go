@@ -9,12 +9,13 @@ import (
 )
 
 func ExampleNewCalendar() {
-	cal := ical.NewCalendar("-//example//booking//EN")
-	event := ical.NewEvent("meeting-1@example.com", time.Date(2026, 6, 11, 1, 2, 3, 0, time.UTC))
-	event.AddDateTimeWithTZID("DTSTART", time.Date(2026, 6, 11, 9, 30, 0, 0, time.FixedZone("Asia/Shanghai", 8*60*60)), "Asia/Shanghai")
-	event.AddDuration("DURATION", time.Hour)
-	event.AddText("SUMMARY", "Planning review")
-	cal.AddComponent(event)
+	cal := ical.NewCalendar("-//example//booking//EN").
+		AddComponent(
+			ical.NewEvent("meeting-1@example.com", time.Date(2026, 6, 11, 1, 2, 3, 0, time.UTC)).
+				AddDateTimeWithTZID("DTSTART", time.Date(2026, 6, 11, 9, 30, 0, 0, time.FixedZone("Asia/Shanghai", 8*60*60)), "Asia/Shanghai").
+				AddDuration("DURATION", time.Hour).
+				AddText("SUMMARY", "Planning review"),
+		)
 
 	fmt.Print(strings.ReplaceAll(cal.String(), "\r\n", "\n"))
 	// Output:
@@ -41,14 +42,14 @@ func ExampleParseCalendar() {
 }
 
 func ExampleNewEvent_withRecurrence() {
-	event := ical.NewEvent("recur@example.com", time.Date(2026, 6, 12, 1, 2, 3, 0, time.UTC))
-	event.AddDateTime(ical.PropDTStart, time.Date(2026, 6, 12, 10, 0, 0, 0, time.UTC))
-	event.AddRecurrenceRule(ical.RecurrenceRule{
-		Frequency: ical.Weekly,
-		ByDay:     []ical.Weekday{ical.Monday, ical.Wednesday, ical.Friday},
-		Count:     6,
-	})
-	event.AddText(ical.PropSummary, "Recurring standup")
+	event := ical.NewEvent("recur@example.com", time.Date(2026, 6, 12, 1, 2, 3, 0, time.UTC)).
+		AddDateTime(ical.PropDTStart, time.Date(2026, 6, 12, 10, 0, 0, 0, time.UTC)).
+		AddRecurrenceRule(ical.RecurrenceRule{
+			Frequency: ical.Weekly,
+			ByDay:     []ical.Weekday{ical.Monday, ical.Wednesday, ical.Friday},
+			Count:     6,
+		}).
+		AddText(ical.PropSummary, "Recurring standup")
 
 	fmt.Print(strings.ReplaceAll(event.String(), "\r\n", "\n"))
 	// Output:
@@ -62,13 +63,12 @@ func ExampleNewEvent_withRecurrence() {
 }
 
 func ExampleNewTimezone() {
-	tz := ical.NewTimezone("America/New_York")
-	standard := ical.NewTimezoneStandard(
-		time.Date(2026, 11, 1, 2, 0, 0, 0, time.UTC),
-		-4*time.Hour,
-		-5*time.Hour,
-	)
-	tz.AddComponent(standard)
+	tz := ical.NewTimezone("America/New_York").
+		AddComponent(ical.NewTimezoneStandard(
+			time.Date(2026, 11, 1, 2, 0, 0, 0, time.UTC),
+			-4*time.Hour,
+			-5*time.Hour,
+		))
 
 	errs := tz.Validate()
 	fmt.Println(len(errs))
@@ -77,8 +77,8 @@ func ExampleNewTimezone() {
 
 func ExampleComponent_Validate() {
 	// An event without required DTSTAMP is invalid
-	event := ical.NewComponent(ical.CompVEvent)
-	event.AddText(ical.PropUID, "test@example.com")
+	event := ical.NewComponent(ical.CompVEvent).
+		AddText(ical.PropUID, "test@example.com")
 
 	errs := event.Validate()
 	for _, err := range errs {

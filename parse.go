@@ -9,7 +9,7 @@ import (
 
 // ParseCalendar parses one VCALENDAR object from an RFC 5545 byte stream.
 // If the stream contains multiple VCALENDAR objects, only the first is returned.
-// Use ParseCalendars to parse streams with multiple calendars.
+// Use [ParseCalendars] to parse streams with multiple calendars.
 func ParseCalendar(data []byte) (*Component, error) {
 	c, err := ParseComponent(data)
 	if err != nil {
@@ -36,7 +36,7 @@ func ParseCalendars(data []byte) ([]*Component, error) {
 }
 
 // ParseComponent parses any single RFC 5545 component (VCALENDAR, VEVENT,
-// VTIMEZONE, etc.) from a byte stream. Use ParseCalendar when you specifically
+// VTIMEZONE, etc.) from a byte stream. Use [ParseCalendar] when you specifically
 // expect a VCALENDAR object.
 func ParseComponent(data []byte) (*Component, error) {
 	roots, err := parseComponents(data)
